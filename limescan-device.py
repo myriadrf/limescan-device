@@ -7,7 +7,9 @@ from datetime import datetime
 import configparser
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+configfile = config.read('config.ini')
+if len(configfile) == 0:
+    raise ValueError("Configuration file missing, rename config.example.ini to config.ini")
 
 url = config["DEFAULT"]["DATA_URL"] + "write?db=limemicro"
 configurl = config["DEFAULT"]["API_URL"]
