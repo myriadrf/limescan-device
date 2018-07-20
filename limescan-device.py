@@ -11,7 +11,6 @@ def CheckForUpdate(workingDir):
     # Check how far ahead master is
     subprocess.check_output(["git", "fetch", "--all"])
     revcount = int(subprocess.check_output(["git", "rev-list", "HEAD...origin/master", "--count"]))
-    print ("Code is " + str(revcount) + " versions behind.")
     if revcount is 0:
         print ("Code is on the latest version.")
         return False
