@@ -3,8 +3,31 @@ import requests
 import json
 import subprocess
 import csv
+import os
 from datetime import datetime
 import configparser
+
+def CheckForUpdate(workingDir):
+    # Check how far ahead master is
+    subprocess.check_output(["git", "fetch", "--all"])
+    revcount = int(subprocess.check_output(["git", "rev-list", "HEAD...origin/master", "--count"]))
+    print ("Code is " + str(revcount) + " versions behind.")
+    if revcount is 0:
+        print ("Code is on the latest version.")
+        return False
+    else:
+        print ("New update available.")
+        return True
+
+gitDir = "./"
+print("*********** Checking for code update **************")
+
+if CheckForUpdate(gitDir):
+    print ("Updating...")
+    resetCheck = subprocess.check_output(["git", "--git-dir=" + gitDir + ".git/", "--work-tree=" + gitDir, "reset", "--hard", "origin/master"])
+    print ("Update complete. Restarting...")
+    # Closes current process and opens a new one. Sudo currently required to use limesuite.
+    os.execvp("sudo", ["sudo"] + ["python3"] + sys.argv)
 
 config = configparser.ConfigParser()
 configfile = config.read('config.ini')
@@ -30,7 +53,6 @@ filename = devicename
 subprocess.Popen([command + " -f 600M:1000M -C 0 -A LNAW -w 35M -r 16M -OSR 8 -b 512 -g 48 -n 64 -O 'scan-output' -T 1"], shell=True).wait()
 
 with open('scan-output/scan-outputPk.csv', newline='') as csvfile:
-
     reader = csv.reader(csvfile, delimiter=',')
     reader.__next__() #first row is filename, skip it
     i = 1
