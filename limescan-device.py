@@ -47,9 +47,13 @@ if deviceconfig['scan_type'] == "limescan":
 else:
     command = "LimeMon"
 
+if deviceconfig['custom_config'] is None and command == "LimeScan":
+    params = "-f 600M:1000M -C 0 -A LNAW -w 35M -r 16M -OSR 8 -b 512 -g 48 -n 64 -T 1"
+else:
+    params = deviceconfig['custom_config']
 
 filename = devicename
-subprocess.Popen([command + " -f 600M:1000M -C 0 -A LNAW -w 35M -r 16M -OSR 8 -b 512 -g 48 -n 64 -O 'scan-output' -T 1"], shell=True).wait()
+subprocess.Popen([command + " " + params + " -O 'scan-output'"], shell=True).wait()
 
 with open('scan-output/scan-outputPk.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
