@@ -9,17 +9,6 @@ import configparser
 from random import randint
 
 
-def CheckForUpdate (workingDir):
-    # Check how far ahead master is
-    subprocess.check_output(["git", "fetch", "--all"])
-    revcount = int(subprocess.check_output(["git", "rev-list", "HEAD...origin/master", "--count"]))
-    if revcount is 0:
-        print ("Code is on the latest version.")
-        return False
-    else:
-        print ("New update available.")
-        return True
-
 def LimeScan (url, configurl, devicename, deviceconfig):
     if deviceconfig['custom_config'] is None:
         params = "-f 600M:1000M -C 0 -A LNAW -w 35M -r 16M -OSR 8 -b 512 -g 48 -n 64 -T 1"
@@ -109,18 +98,9 @@ def GSM (url, configurl, devicename, deviceconfig):
                 influxlines += ' '.join(columns) + '\n'
         influx_response = requests.post(url, data=influxlines)
         print(influxlines, influx_response.text)
-gitDir = "./"
-# print("*********** Checking for code update **************")
-
-#if CheckForUpdate(gitDir):
-#    print ("Updating...")
-#    resetCheck = subprocess.check_output(["git", "--git-dir=" + gitDir + ".git/", "--work-tree=" + gitDir, "reset", "--hard", "origin/master"])
-#    print ("Update complete. Restarting...")
-#    # Closes current process and opens a new one. Sudo currently required to use limesuite.
-#    os.execvp("sudo", ["sudo"] + ["python3"] + sys.argv)
 
 config = configparser.ConfigParser()
-configfile = config.read('config.ini')
+configfile = config.read(['config.ini', '/pantavisor/user-meta/limescan-config.ini'])
 if len(configfile) == 0:
     raise ValueError("Configuration file missing, rename config.example.ini to config.ini")
 
@@ -135,3 +115,4 @@ if deviceconfig['scan_type'] == "power":
 
 if deviceconfig['scan_type'] == "gsm":
     GSM(url, configurl, devicename, deviceconfig)
+
