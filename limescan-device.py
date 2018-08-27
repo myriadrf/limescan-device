@@ -100,7 +100,11 @@ def GSM (url, configurl, devicename, deviceconfig):
         print(influxlines, influx_response.text)
 
 config = configparser.ConfigParser()
+<<<<<<< 08e317ef6d359a4bd26864681b267305a3ea6200
 configfile = config.read(['config.ini', '/pantavisor/user-meta/limescan-config.ini'])
+=======
+configfile = config.read(['config.ini', '/etc/lime/scan/config.ini'])
+>>>>>>> support global location for config.ini
 if len(configfile) == 0:
     raise ValueError("Configuration file missing, rename config.example.ini to config.ini")
 
