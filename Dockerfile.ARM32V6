@@ -1,0 +1,21 @@
+FROM registry.gitlab.com/pantacor/c-green1/lime-tools:ARM32V6 as LIB
+
+FROM registry.gitlab.com/pantacor/pvplatform-alpine-base:ARM32V6
+
+ADD files /
+
+RUN \
+	apk update && \
+	apk add libstdc++ libusb fftw python3 \
+	&& rm -rf /var/cache/apk/* &&\
+	sed -i 's/^#ttyS0::respawn/ttyS0::respawn/' /etc/inittab && \
+	echo ttyS0 >> /etc/securetty && \
+	echo root:pantalime | chpasswd  && \
+	chmod a+x /usr/local/bin/limescan-device.py && \
+	pip3 install requests
+
+RUN rc-update add limescan-deviced default
+
+COPY --from=LIB /usr/local/bin/LimeScan /usr/local/bin/
+COPY --from=LIB /usr/local/lib /usr/local/lib
+

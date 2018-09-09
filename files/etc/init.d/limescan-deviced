@@ -1,0 +1,25 @@
+#!/sbin/openrc-run
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+        before netmount nfsmount
+        use net
+}
+
+start() {
+        ebegin "Starting limescan-deviced"
+        /sbin/start-stop-daemon -b \
+                --exec /usr/local/bin/limescan-deviced \
+                -1 /var/log/limescan-deviced.log \
+                -2 /var/log/limescan-deviced.log \
+                --start
+        eend $?
+}
+
+stop() {
+        ebegin "Stopping limescan-deviced"
+        /sbin/start-stop-daemon -K --name limescan-deviced
+        eend $?
+}
+
