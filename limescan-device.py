@@ -55,7 +55,7 @@ else:
 filename = devicename
 subprocess.Popen([command + " " + params + " -O 'scan-output'"], shell=True).wait()
 
-with open('scan-output/scan-outputPk.csv', newline='') as csvfile:
+with open('scan-output/scan-outputRMS.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     reader.__next__() #first row is filename, skip it
     i = 1
