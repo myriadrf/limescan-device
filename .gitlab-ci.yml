@@ -11,6 +11,7 @@ variables:
 before_script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
   - docker run --rm --privileged multiarch/qemu-user-static:register || true
+  - mkdir tmp; wget -O tmp/qemu-arm-static https://github.com/multiarch/qemu-user-static/releases/download/v2.12.0-1/qemu-arm-static; chmod a+x tmp/qemu-arm-static
 
 build-arm:
   stage: build
