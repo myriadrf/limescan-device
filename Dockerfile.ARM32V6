@@ -2,6 +2,8 @@ FROM registry.gitlab.com/pantacor/c-green1/lime-tools:ARM32V6 as LIB
 
 FROM arm32v6/alpine:3.8
 
+COPY tmp/qemu-arm-static usr/bin
+
 ADD files /
 
 RUN \
