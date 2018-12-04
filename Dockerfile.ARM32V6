@@ -1,8 +1,6 @@
 FROM registry.gitlab.com/pantacor/c-green1/lime-tools:ARM32V6 as LIB
 
-FROM arm32v6/alpine:3.8
-
-COPY tmp/qemu-arm-static usr/bin
+FROM registry.gitlab.com/pantacor/pv-platforms/alpine-base:ARM32V6-pvlogger
 
 ADD files /
 
@@ -11,6 +9,11 @@ RUN \
 	apk add openrc libstdc++ libusb fftw python3 \
 	&& rm -rf /var/cache/apk/* &&\
 	rc-update add zeronetworking sysinit default && \
+        rc-update del networking; \
+        rc-update add syslog sysinit default; \
+        rc-update add dropbear default; \
+        rc-update del ntpd default; \
+        rc-update add pvlogger default; \
 	sed -i 's/^#ttyS0::respawn/ttyS0::respawn/' /etc/inittab && \
 	echo ttyS0 >> /etc/securetty && \
 	echo root:pantalime | chpasswd  && \
