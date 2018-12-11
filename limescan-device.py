@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 import configparser
 
-def CheckForUpdate(workingDir):
+def CheckForUpdate (workingDir):
     # Check how far ahead master is
     subprocess.check_output(["git", "fetch", "--all"])
     revcount = int(subprocess.check_output(["git", "rev-list", "HEAD...origin/master", "--count"]))
@@ -17,6 +17,46 @@ def CheckForUpdate(workingDir):
     else:
         print ("New update available.")
         return True
+
+def LimeScan (url, configurl, devicename, deviceconfig):
+    if deviceconfig['custom_config'] is None:
+        params = "-f 600M:1000M -C 0 -A LNAW -w 35M -r 16M -OSR 8 -b 512 -g 48 -n 64 -T 1"
+    else:
+        params = deviceconfig['custom_config']
+    subprocess.Popen(["LimeScan " + params + " -O 'scan-output'"], shell=True).wait()
+
+    first_timestamp = None
+    last_timestamp = None
+    with open('scan-output/scan-outputPk.csv', newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        reader.__next__() #first row is filename, skip it
+        i = 1
+        lines = ""
+        for items in reader:
+            timestamp_obj = datetime.strptime(items[0].strip() + " " + items[1].strip(), '%Y-%m-%d %H:%M:%S')
+            nanoseconds = str(round(timestamp_obj.timestamp() * 1e9) + i)
+            if first_timestamp is None:
+                first_timestamp = nanoseconds
+            freqLow = str(items[2].strip())
+            freqHigh = str(items[3].strip())
+            freqStep = str(items[4].strip())
+            dB = '"' + ",".join([str(item).strip() for item in items[6:]]) + '"'
+
+            influxline = "spectrum,sensor=" + devicename + " hzlow=" + freqLow + ",hzhigh=" + freqHigh + ",step=" + freqStep + ",samples=3,dbs=" + dB + " " + nanoseconds
+            lines += '\n' + influxline
+            last_timestamp = nanoseconds
+            i += 1
+        influx_response = requests.post(url, data=lines)
+        sqlite_response = requests.post(configurl + "scans", json = {"device_config_id": deviceconfig['device_config_id'], "scan_start_time": first_timestamp, "scan_finish_time": last_timestamp })
+
+def CellScanner (url, configurl, devicename, deviceconfig):
+    if deviceconfig['custom_config'] is None:
+        params = ""
+    else:
+        params = deviceconfig['custom_config']
+    output = subprocess.Popen(["grgsm_scanner " + params], shell=True).wait()
+    print(output)
+
 
 gitDir = "./"
 print("*********** Checking for code update **************")
@@ -38,41 +78,9 @@ configurl = config["DEFAULT"]["API_URL"]
 devicename = config["DEFAULT"]["DEVICE_NAME"]
 
 deviceconfig = json.loads(requests.get(configurl + "devices/" + devicename).text)[0]
-command = "LimeScan"
-first_timestamp = None
-last_timestamp = None
 
 if deviceconfig['scan_type'] == "limescan":
-    command = "LimeScan"
-else:
-    command = "LimeMon"
+    LimeScan(url, configurl, devicename, deviceconfig)
 
-if deviceconfig['custom_config'] is None and command == "LimeScan":
-    params = "-f 600M:1000M -C 0 -A LNAW -w 35M -r 16M -OSR 8 -b 512 -g 48 -n 64 -T 1"
-else:
-    params = deviceconfig['custom_config']
-
-filename = devicename
-subprocess.Popen([command + " " + params + " -O 'scan-output'"], shell=True).wait()
-
-with open('scan-output/scan-outputPk.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    reader.__next__() #first row is filename, skip it
-    i = 1
-    lines = ""
-    for items in reader:
-        timestamp_obj = datetime.strptime(items[0].strip() + " " + items[1].strip(), '%Y-%m-%d %H:%M:%S')
-        nanoseconds = str(round(timestamp_obj.timestamp() * 1e9) + i)
-        if first_timestamp is None:
-            first_timestamp = nanoseconds
-        freqLow = str(items[2].strip())
-        freqHigh = str(items[3].strip())
-        freqStep = str(items[4].strip())
-        dB = '"' + ",".join([str(item).strip() for item in items[6:]]) + '"'
-
-        influxline = "spectrum,sensor=" + devicename + " hzlow=" + freqLow + ",hzhigh=" + freqHigh + ",step=" + freqStep + ",samples=3,dbs=" + dB + " " + nanoseconds
-        lines += '\n' + influxline
-        last_timestamp = nanoseconds
-        i += 1
-    influx_response = requests.post(url, data=lines)
-    sqlite_response = requests.post(configurl + "scans", json = {"device_config_id": deviceconfig['device_config_id'], "scan_start_time": first_timestamp, "scan_finish_time": last_timestamp })
+if deviceconfig['scan_type'] == "cellscanner":
+    CellScanner(url, configurl, devicename, deviceconfig)
