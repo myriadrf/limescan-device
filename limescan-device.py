@@ -77,7 +77,7 @@ url = config["DEFAULT"]["DATA_URL"] + "write?db=limemicro"
 configurl = config["DEFAULT"]["API_URL"]
 devicename = config["DEFAULT"]["DEVICE_NAME"]
 
-deviceconfig = json.loads(requests.get(configurl + "devices/" + devicename).text)[0]
+deviceconfig = json.loads(requests.get(configurl + "devices/" + devicename).text)
 
 if deviceconfig['scan_type'] == "limescan":
     LimeScan(url, configurl, devicename, deviceconfig)
