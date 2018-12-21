@@ -39,11 +39,11 @@ def LimeScan (url, configurl, devicename, deviceconfig):
             nanoseconds = str(round(timestamp_obj.timestamp() * 1e9) + i)
             if first_timestamp is None:
                 first_timestamp = nanoseconds
-            freqLow = str(items[2].strip())
-            freqHigh = str(items[3].strip())
-            freqStep = str(items[4].strip())
+            freqLow = str(int(float(items[2]) * 1e6))
+            freqHigh = str(int(float(items[3]) * 1e6))
+            freqStep = str(int(float(items[4])))
+            print(freqLow, freqHigh, freqStep)
             dB = '"' + ",".join([str(item).strip() for item in items[6:]]) + '"'
-
             influxline = "power,sensor=" + devicename + " hzlow=" + freqLow + ",hzhigh=" + freqHigh + ",step=" + freqStep + ",samples=3,dbs=" + dB + " " + nanoseconds
             lines += '\n' + influxline
             last_timestamp = nanoseconds
