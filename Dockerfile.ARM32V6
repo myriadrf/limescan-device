@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/pantacor/c-green1/lime-tools:ARM32V6 as LIB
+FROM registry.gitlab.com/myriadrf/lime-tools:ARM32V6 as LIB
 
 FROM registry.gitlab.com/pantacor/pv-platforms/alpine-base:ARM32V6-pvlogger
 
