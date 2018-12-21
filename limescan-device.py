@@ -76,7 +76,7 @@ def GSM (url, configurl, devicename, deviceconfig):
 
     # dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\nARFCN:   86, Freq:  952.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -44\nARFCN:   96, Freq:  954.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -45\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  10, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8') + b'\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  30, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8')
     #dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\n\n'
-    #dummy = out
+    dummy = out
     dummysplit = str(dummy, 'utf-8').split('\n')
     lines = ""
     items = []
