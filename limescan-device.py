@@ -42,7 +42,6 @@ def LimeScan (url, configurl, devicename, deviceconfig):
             freqLow = str(int(float(items[2]) * 1e6))
             freqHigh = str(int(float(items[3]) * 1e6))
             freqStep = str(int(float(items[4])))
-            print(freqLow, freqHigh, freqStep)
             dB = '"' + ",".join([str(item).strip() for item in items[6:]]) + '"'
             influxline = "power,sensor=" + devicename + " hzlow=" + freqLow + ",hzhigh=" + freqHigh + ",step=" + freqStep + ",samples=3,dbs=" + dB + " " + nanoseconds
             lines += '\n' + influxline
