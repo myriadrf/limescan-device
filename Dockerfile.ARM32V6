@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/myriadrf/lime-tools:ARM32V6-18.06-panta-with-package-loss as LIB
+FROM registry.gitlab.com/pantacor/c-green1/lime-tools:ARM32V6-limenet as LIB
 
 FROM registry.gitlab.com/pantacor/pv-platforms/alpine-base:ARM32V6
 
