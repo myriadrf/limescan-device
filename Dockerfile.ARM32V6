@@ -1,6 +1,6 @@
-FROM registry.gitlab.com/myriadrf/lime-tools:ARM32V6 as LIB
+FROM registry.gitlab.com/myriadrf/lime-tools:ARM32V6-18.06-panta-with-package-loss as LIB
 
-FROM registry.gitlab.com/pantacor/pv-platforms/alpine-base:ARM32V6-pvlogger
+FROM registry.gitlab.com/pantacor/pv-platforms/alpine-base:ARM32V6
 
 ADD files /
 
@@ -22,6 +22,6 @@ RUN \
 
 RUN rc-update add limescan-deviced default
 
-COPY --from=LIB /usr/local/bin/LimeScan /usr/local/bin/
+COPY --from=LIB /usr/local/bin/* /usr/local/bin/
 COPY --from=LIB /usr/local/lib /usr/local/lib
 
