@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/pantacor/c-green1/lime-tools:ARM32V6-limenet as LIB
+FROM registry.gitlab.com/pantacor/c-green1/lime-tools:ARM32V6-master as LIB
 
 FROM registry.gitlab.com/pantacor/pv-platforms/alpine-base:ARM32V6
 
@@ -6,7 +6,7 @@ ADD files /
 
 RUN \
 	apk update && \
-	apk add openrc libstdc++ libusb fftw python3 \
+	apk add openrc libstdc++ libusb fftw python3 logrotate \
 	&& rm -rf /var/cache/apk/* &&\
 	rc-update add zeronetworking sysinit default && \
         rc-update del networking; \

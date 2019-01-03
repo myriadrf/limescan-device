@@ -1,0 +1,6 @@
+/var/log/limescan-deviced.log {
+	daily
+	maxsize 10000000
+	missingok
+	notifempty
+}
