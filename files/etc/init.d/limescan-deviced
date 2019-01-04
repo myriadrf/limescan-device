@@ -11,8 +11,6 @@ start() {
         ebegin "Starting limescan-deviced"
         /sbin/start-stop-daemon -b \
                 --exec /usr/local/bin/limescan-deviced \
-                -1 /var/log/limescan-deviced.log \
-                -2 /var/log/limescan-deviced.log \
                 --start
         eend $?
 }
