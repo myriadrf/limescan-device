@@ -9,15 +9,14 @@ depend() {
 
 start() {
         ebegin "Starting limescan-deviced"
-        /sbin/start-stop-daemon -b \
-                --exec /usr/local/bin/limescan-deviced \
-                --start
+        /sbin/start-stop-daemon -b --exec /bin/sh --start -m --pidfile /run/limescan-deviced.pid -- -c "/usr/local/bin/limescan-deviced 2>&1 | logger -t limescan-deviced -p daemon.info"
         eend $?
 }
 
 stop() {
         ebegin "Stopping limescan-deviced"
-        /sbin/start-stop-daemon -K --name limescan-deviced
+        kill -TERM -`cat /run/limescan-deviced.pid`
+        rm -f /run/limescan-deviced.pid
         eend $?
 }
 
