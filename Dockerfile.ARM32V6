@@ -6,11 +6,11 @@ ADD files /
 
 RUN \
 	apk update && \
-	apk add openrc libstdc++ libusb fftw python3 logrotate \
+	apk add openrc libstdc++ libusb fftw python3 logrotate rsyslog \
 	&& rm -rf /var/cache/apk/* &&\
 	rc-update add zeronetworking sysinit default && \
         rc-update del networking; \
-        rc-update add syslog sysinit default; \
+        rc-update add rsyslog sysinit default; \
         rc-update add dropbear default; \
         rc-update del ntpd default; \
         rc-update add pvlogger default; \
