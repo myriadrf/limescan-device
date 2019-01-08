@@ -1,6 +1,6 @@
 #!/bin/sh
 
 while true; do
-	/usr/local/bin/limescan-device.py 2>&1 | /usr/local/bin/pvlogger
+	/usr/local/bin/limescan-device.py
 done
 
