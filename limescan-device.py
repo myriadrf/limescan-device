@@ -4,21 +4,27 @@ import json
 import subprocess
 import csv
 import os
+import hashlib
 from datetime import datetime
 import configparser
 from random import randint
+import collections
 
+def getDigest(input):
+    print(input)
+    block_size = 65536
+    sha256 = hashlib.sha256()
+    sha256.update(input.encode('utf-8'))
+    digest = sha256.hexdigest()
+    return(digest)
 
-def CheckForUpdate (workingDir):
-    # Check how far ahead master is
-    subprocess.check_output(["git", "fetch", "--all"])
-    revcount = int(subprocess.check_output(["git", "rev-list", "HEAD...origin/master", "--count"]))
-    if revcount is 0:
-        print ("Code is on the latest version.")
-        return False
-    else:
-        print ("New update available.")
-        return True
+def lineAddScanID(line, scanid):
+    columns = line.split(' ')
+    newline = ""
+    if (len(columns) > 1):
+        columns[-2] = str(columns[-2]) + ',scanid="' + str(scanid) + '"'
+        newline += ' '.join(columns)
+    return newline
 
 def LimeScan (url, configurl, devicename, deviceconfig):
     if deviceconfig['custom_config'] is None:
@@ -47,16 +53,24 @@ def LimeScan (url, configurl, devicename, deviceconfig):
             lines += '\n' + influxline
             last_timestamp = nanoseconds
             i += 1
-        sqlite_response = requests.post(configurl + "scans", json = {"device_config_id": deviceconfig['device_config_id'], "scan_start_time": first_timestamp, "scan_finish_time": last_timestamp })
+
+        scan_digest = getDigest(lines)
+        metadata = {
+            "device_config_id": deviceconfig['device_config_id'],
+            "scan_start_time": float(first_timestamp),
+            "scan_finish_time": float(last_timestamp),
+            "scan_digest": scan_digest
+        }
+
+        scanid = getDigest(json.dumps(metadata, sort_keys=True))
+        metadata["id"] = scanid
+
         influxlines = ""
-        scanid = json.loads(sqlite_response.text)['stmt']['lastID']
         for line in lines.split('\n'):
-            columns = line.split(' ')
-            if (len(columns) > 1):
-                columns[-2] = str(columns[-2]) + ',scanid=' + str(scanid)
-                influxlines += ' '.join(columns) + '\n'
+            influxlines += lineAddScanID(line, scanid) + '\n'
         influx_response = requests.post(url, data=influxlines)
-        #print(influxlines)
+        sqlite_response = requests.post(configurl + "scans", json = metadata)
+
 
 
 def GSM (url, configurl, devicename, deviceconfig):
@@ -65,17 +79,17 @@ def GSM (url, configurl, devicename, deviceconfig):
         band = deviceconfig['scan_band']
     params = "--args rtl -b" + band
 
-    output = subprocess.Popen(["grgsm_scanner " + params], shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    out, err = output.communicate()
-    output.wait()
-    print("command:", "grgsm_scanner " + params)
-    print("out:", out)
-    print("error:", err)
+    # output = subprocess.Popen(["grgsm_scanner " + params], shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    # out, err = output.communicate()
+    # output.wait()
+    # print("command:", "grgsm_scanner " + params)
+    # print("out:", out)
+    # print("error:", err)
 
 
-    # dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\nARFCN:   86, Freq:  952.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -44\nARFCN:   96, Freq:  954.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -45\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  10, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8') + b'\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  30, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8')
+    dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\nARFCN:   86, Freq:  952.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -44\nARFCN:   96, Freq:  954.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -45\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  10, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8') + b'\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  30, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8')
     #dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\n\n'
-    dummy = out
+    #dummy = out
     dummysplit = str(dummy, 'utf-8').split('\n')
     lines = ""
     items = []
@@ -85,7 +99,6 @@ def GSM (url, configurl, devicename, deviceconfig):
         print(item)
         commasplit = item.split(',')
         commasplit = [i.split(':') for i in commasplit]
-        #print("commasplit: " + commasplit)
         for i in commasplit:
             if i != "" and i[0] and i[1]:
                 subitems[i[0].strip()] = i[1].strip()
@@ -98,26 +111,23 @@ def GSM (url, configurl, devicename, deviceconfig):
         except:
             continue
     last_timestamp = datetime.now().timestamp() * 1e9
-    if len(lines) > 0:
-        sqlite_response = requests.post(configurl + "scans", json = {"device_config_id": deviceconfig['device_config_id'], "scan_start_time": first_timestamp, "scan_finish_time": last_timestamp })
-        influxlines = ""
-        scanid = json.loads(sqlite_response.text)['stmt']['lastID']
-        for line in lines.split('\n'):
-            columns = line.split(' ')
-            if (len(columns) > 1):
-                columns[-2] = str(columns[-2]) + ',scanid=' + str(scanid)
-                influxlines += ' '.join(columns) + '\n'
-        influx_response = requests.post(url, data=influxlines)
-        print(influxlines, influx_response.text)
-gitDir = "./"
-# print("*********** Checking for code update **************")
 
-#if CheckForUpdate(gitDir):
-#    print ("Updating...")
-#    resetCheck = subprocess.check_output(["git", "--git-dir=" + gitDir + ".git/", "--work-tree=" + gitDir, "reset", "--hard", "origin/master"])
-#    print ("Update complete. Restarting...")
-#    # Closes current process and opens a new one. Sudo currently required to use limesuite.
-#    os.execvp("sudo", ["sudo"] + ["python3"] + sys.argv)
+    for line in lines.split('\n'):
+        line = line.strip()
+        print(line)
+        scan_digest = getDigest(line)
+        metadata = {
+            "device_config_id": deviceconfig['device_config_id'],
+            "scan_start_time": first_timestamp,
+            "scan_finish_time": last_timestamp,
+            "scan_digest": scan_digest
+        }
+        scanid = getDigest(json.dumps(metadata, sort_keys=True))
+        metadata["id"] = scanid
+        line = lineAddScanID(line, scanid)
+        print(line)
+        influx_response = requests.post(url, data=line)
+        sqlite_response = requests.post(configurl + "scans", json = metadata)
 
 config = configparser.ConfigParser()
 configfile = config.read('config.ini')
