@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+
+# fake networking target; use only in systemcontainers that dont
+# manage network
+
+depend() {
+        need localmount
+        after bootmisc hwdrivers modules
+        provide net
+}
+
+start() {
+        ebegin "Starting zeronetworking"
+        eend 0
+}
+
+stop() {
+        ebegin "Stopping zeronetworking"
+        return 0
+}
+

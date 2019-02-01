@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import sys
 import requests
 import json
@@ -87,9 +89,9 @@ def GSM (url, configurl, devicename, deviceconfig):
     # print("error:", err)
 
 
-    dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\nARFCN:   86, Freq:  952.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -44\nARFCN:   96, Freq:  954.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -45\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  10, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8') + b'\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  30, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8')
+    # dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\nARFCN:   86, Freq:  952.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -44\nARFCN:   96, Freq:  954.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -45\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  10, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8') + b'\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  30, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8')
     #dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\n\n'
-    #dummy = out
+    dummy = out
     dummysplit = str(dummy, 'utf-8').split('\n')
     lines = ""
     items = []
@@ -130,7 +132,7 @@ def GSM (url, configurl, devicename, deviceconfig):
         sqlite_response = requests.post(configurl + "scans", json = metadata)
 
 config = configparser.ConfigParser()
-configfile = config.read('config.ini')
+configfile = config.read(['config.ini', '/pantavisor/user-meta/limescan-config.ini'])
 if len(configfile) == 0:
     raise ValueError("Configuration file missing, rename config.example.ini to config.ini")
 
@@ -145,3 +147,4 @@ if deviceconfig['scan_type'] == "power":
 
 if deviceconfig['scan_type'] == "gsm":
     GSM(url, configurl, devicename, deviceconfig)
+
