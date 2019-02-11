@@ -13,3 +13,6 @@
 [submodule "gr-limesdr"]
 	path = gr-limesdr
 	url = https://github.com/myriadrf/gr-limesdr
+[submodule "gr-osmosdr"]
+	path = gr-osmosdr
+	url = https://github.com/osmocom/gr-osmosdr

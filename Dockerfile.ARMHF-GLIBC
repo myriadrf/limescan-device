@@ -132,7 +132,22 @@ RUN echo "=======================" \
 		-DENABLE_GRGSM_LIVEMON_HEADLESS="OFF" \
 		-DCMAKE_INSTALL_PREFIX=/usr/local \
         && make -j5 VERBOSE=1 \
-        && make install || true
+        && make install
+
+COPY gr-osmosdr gr-osmosdr
+COPY cmake-cross gr-osmosdr/cmake-cross
+
+RUN echo "=======================" \
+	&& echo "  BUILDING: gr-osmosdr" \
+	&& echo "=======================" \
+	&& cd gr-osmosdr && \
+	cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
+		-DCMAKE_CFLAGS="-mcpu=cortex-a7  -mfpu=neon-vfpv4" \
+		-DCMAKE_C_FLAGS="-mcpu=cortex-a7  -mfpu=neon-vfpv4" \
+		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a7  -mfpu=neon-vfpv4" \ 
+		-DCMAKE_INSTALL_PREFIX=/usr/local \
+        && make -j5 VERBOSE=1 \
+        && make install
 
 
 FROM registry.gitlab.com/pantacor/pantavisor-runtime/pvlogger:ARM32V6-master as pvlogger
@@ -140,7 +155,29 @@ FROM registry.gitlab.com/pantacor/pantavisor-runtime/pvlogger:ARM32V6-master as 
 FROM raspbian/stretch
 
 RUN apt-get update \
-	&& apt-get install -y gr-osmosdr \
+	&& apt-get install -y \
+                python3 \
+                python \
+                python-mako \
+                python-cheetah \
+                python-six \
+                python-numpy \
+                libfftw3-3 \
+                libusb-1.0-0 \
+                liblog4cpp5v5 \
+                libboost-atomic1.62.0 \
+                libboost-chrono1.62.0 \
+                libboost-date-time1.62.0 \
+                libboost-filesystem1.62.0 \
+                libboost-program-options1.62.0 \
+                libboost-regex1.62.0 \
+                libboost-system1.62.0 \
+                libboost-thread1.62.0 \
+                libportaudio2 \
+                libjack0 \
+                libsdl2-2.0-0 \
+                libuhd003 \
+                libzmq5 \
                 openssh-server \
                 raspi-config \
                 rsyslog \
