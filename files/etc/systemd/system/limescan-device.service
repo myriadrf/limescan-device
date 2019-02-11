@@ -1,0 +1,12 @@
+[Unit]
+Description=Limescan Device
+
+[Service]
+WorkingDirectory=/var/lib/limescan-device/
+ExecStart=/usr/local/bin/limescan-deviced
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+

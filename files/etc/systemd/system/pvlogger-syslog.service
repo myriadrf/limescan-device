@@ -1,0 +1,13 @@
+[Unit]
+Description=Pantavisor Logging Daemon (syslog)
+After=systemd-journald.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/pvlogger /var/log/syslog
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
