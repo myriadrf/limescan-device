@@ -157,6 +157,7 @@ FROM raspbian/stretch
 RUN apt-get update \
 	&& apt-get install -y \
                 python3 \
+                python3-requests \
                 python \
                 python-mako \
                 python-cheetah \
@@ -193,6 +194,7 @@ COPY --from=pvlogger /usr/local/bin/pvlogger /usr/local/bin/
 COPY files /
 
 RUN mkdir -p /etc/systemd/system/multi-user.target.wants/ || true \
+	&& mkdir -p /var/lib/limescan-device/ || true \
 	&& ln -s /etc/systemd/system/regenerate_ssh_host_keys.service /etc/systemd/system/multi-user.target.wants/ \
 	&& ln -s /etc/systemd/system/pvlogger-syslog.service /etc/systemd/system/multi-user.target.wants/ \
 	&& ln -s /etc/systemd/system/limescan-device.service /etc/systemd/system/multi-user.target.wants/ \
