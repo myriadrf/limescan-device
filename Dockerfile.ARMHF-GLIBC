@@ -58,8 +58,8 @@ RUN echo "=======================" \
 	&& mkdir build \
 	&& cd build \
 	&& cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
-		-DCMAKE_C_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
-		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
+		-DCMAKE_C_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
 		-DENABLE_GR_WXGUI=OFF -DENABLE_GR_VOCODER=OFF -DENABLE_GR_DTV=OFF \
 		-DENABLE_GR_ATSC=OFF -DENABLE_DOXYGEN=OFF \
 		-DCMAKE_INSTALL_PREFIX=/usr/local ../src \
@@ -89,8 +89,8 @@ RUN echo "=======================" \
 	&& cd lime-tools \
 	&& cmake --debug-output \
 		-DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
-		-DCMAKE_C_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -I/sysroot-arm/usr/local/include -funsafe-math-optimizations" \
-		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -I/sysroot-arm/usr/local/include -funsafe-math-optimizations" \
+		-DCMAKE_C_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -I/sysroot-arm/usr/local/include -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -I/sysroot-arm/usr/local/include -funsafe-math-optimizations" \
 	&& make -j5 VERBOSE=1 \
         && make install \
 	|| true
@@ -104,8 +104,8 @@ RUN echo "=======================" \
 	&& echo "  BUILDING: gr-limesdr" \
 	&& echo "=======================" \
 	&& cd gr-limesdr && PKG_CONFIG_PATH=/sysroot-arm/usr/local/lib/pkgconfig/ cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
-	-DCMAKE_C_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
-	-DCMAKE_CXX_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+	-DCMAKE_C_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+	-DCMAKE_CXX_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
 	-DCMAKE_PREFIX_PATH=/sysroot-arm/usr/local/lib/pkgconfig/ \
 	-DCMAKE_INSTALL_PREFIX=/usr/local \
         && PKG_CONFIG_PATH=/sysroot-arm/usr/local/lib/pkgconfig/ make -j5 VERBOSE=1 \
@@ -120,8 +120,8 @@ RUN echo "=======================" \
 	&& echo "=======================" \
 	&& cd gr-gsm && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
-		-DCMAKE_C_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
-		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
+		-DCMAKE_C_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
 		-DENABLE_GRGSM_LIVEMON="OFF" \
 		-DENABLE_GRGSM_LIVEMON_HEADLESS="OFF" \
 		-DCMAKE_INSTALL_PREFIX=/usr/local \
@@ -136,8 +136,8 @@ RUN echo "=======================" \
 	&& echo "=======================" \
 	&& cd gr-osmosdr && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
-		-DCMAKE_C_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
-		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a53  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
+		-DCMAKE_C_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-mcpu=cortex-a9  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
 		-DCMAKE_INSTALL_PREFIX=/usr/local \
         && make -j5 VERBOSE=1 \
         && make install
