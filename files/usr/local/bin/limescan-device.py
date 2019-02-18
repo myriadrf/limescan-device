@@ -74,20 +74,18 @@ def LimeScan (url, configurl, devicename, deviceconfig):
         sqlite_response = requests.post(configurl + "scans", json = metadata)
 
 
-
 def GSM (url, configurl, devicename, deviceconfig):
     band = "GSM900"
     if deviceconfig['scan_band'] is not None:
         band = deviceconfig['scan_band']
-    params = "--args rtl -b" + band
+    params = "-s0.8e6 -g56 -f 20000000 -b" + band
 
-    # output = subprocess.Popen(["grgsm_scanner " + params], shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    # out, err = output.communicate()
-    # output.wait()
-    # print("command:", "grgsm_scanner " + params)
-    # print("out:", out)
-    # print("error:", err)
-
+    output = subprocess.Popen(["grgsm_scanner " + params], shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    out, err = output.communicate()
+    output.wait()
+    print("command:", "grgsm_scanner " + params)
+    print("out:", out)
+    print("error:", err)
 
     # dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\nARFCN:   86, Freq:  952.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -44\nARFCN:   96, Freq:  954.2M, CID:     0, LAC:     0, MCC:   0, MNC:   0, Pwr: -45\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  10, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8') + b'\nARFCN:  105, Freq:  956.0M, CID: 32857, LAC: 21469, MCC: 234, MNC:  30, Pwr: -' + bytes(str(randint(20,60)), encoding='utf-8')
     #dummy = b'linux; GNU C++ version 6.2.0 20161010; Boost_106100; UHD_003.009.005-0-unknown\n\n'
