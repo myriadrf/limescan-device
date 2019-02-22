@@ -98,7 +98,7 @@ def GSM (url, configurl, devicename, deviceconfig):
                 if i != "" and i[0] and i[1]:
                     subitems[i[0].strip()] = i[1].strip()
             try:
-                if subitems['ARFCN'] and int(subitems['ARFCN']) > 0 and int(subitems['MCC']) > 0 and int(subitems['MNC']) > 0 and (int(subitems['Pwr']) > 0 or int(subitems['Pwr']) < 0):
+                if subitems['ARFCN'] and int(subitems['ARFCN']) > 0 and int(subitems['MCC']) > 0 and int(subitems['LAC']) > 0 and int(subitems['CID']) > 0 and int(subitems['MNC']) > 0 and (int(subitems['Pwr']) > 0 or int(subitems['Pwr']) < 0):
                     items.append(subitems)
                     current_timestamp = str(round(datetime.now().timestamp() * 1e9))
                     influxline = 'gsm,sensor=' + devicename + ',ARFCN=' + subitems['ARFCN'] + ',CID=' + subitems['CID'] + ',LAC=' + subitems['LAC'] + ',MCC=' + subitems['MCC'] + ',MNC=' + subitems['MNC'] + ',band=' + band + ' Pwr=' + subitems['Pwr'] + " " + current_timestamp
