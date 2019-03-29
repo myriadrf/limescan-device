@@ -1,0 +1,18 @@
+[submodule "gr-gsm"]
+	path = gr-gsm
+	url = https://gitlab.com/myriadrf/gr-gsm
+[submodule "gnuradio"]
+	path = gnuradio
+	url = https://github.com/gnuradio/gnuradio.git
+[submodule "lime-suite"]
+	path = lime-suite
+	url = https://gitlab.com/myriadrf/lime-suite.git
+[submodule "lime-tools"]
+	path = lime-tools
+	url = https://gitlab.com/myriadrf/lime-tools.git
+[submodule "gr-limesdr"]
+	path = gr-limesdr
+	url = https://github.com/myriadrf/gr-limesdr
+[submodule "gr-osmosdr"]
+	path = gr-osmosdr
+	url = https://github.com/osmocom/gr-osmosdr

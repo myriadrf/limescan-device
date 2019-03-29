@@ -1,0 +1,198 @@
+FROM raspbian/stretch as sysroot
+
+COPY tools/rerelln.sh rerelln.sh
+
+RUN apt-get update && apt-get install -y \
+        git \
+        build-essential \
+        bash-completion \
+        findutils \
+        coreutils \
+        usbutils \
+        gcc \
+        cmake \
+        g++ \
+        libsqlite3-dev \
+        libusb-1.0-0-dev \
+        libfftw3-dev \
+        libpng-dev \
+        python \
+        python-pip \
+	python-mako \
+        python3 \
+        python3-pip \
+	python3-mako \
+        libstdc++-6-dev \
+        libi2c-dev \
+        wiringpi \
+        && pip3 install requests \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists \
+        && sh rerelln.sh /usr/lib/arm-linux-gnueabihf/libusb-1.0.so
+
+RUN apt-get update; apt-get build-dep gnuradio -y; apt-get install libboost-all-dev swig -y; apt-get clean; rm -rf /var/lib/apt/lists
+
+FROM registry.gitlab.com/pantacor/platform-tools/docker-glibc-cross-arm:master as crossbuilder
+
+RUN apt-get update && apt-get install -y \
+	git \
+	build-essential \
+	cmake \
+	swig \
+	python \
+	python-mako \
+	python-six \
+	python-cheetah
+	
+WORKDIR /work
+RUN mkdir /work/stage
+
+COPY --from=sysroot / /sysroot-arm
+
+COPY gnuradio gnuradio/src
+COPY cmake-cross gnuradio/src/cmake-cross
+RUN echo "=======================" \
+	&& echo "  BUILDING: gnuradio" \
+	&& echo "=======================" \
+	&& cd gnuradio \
+	&& mkdir build \
+	&& cd build \
+	&& cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
+		-DCMAKE_C_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
+		-DENABLE_GR_WXGUI=OFF -DENABLE_GR_VOCODER=OFF -DENABLE_GR_DTV=OFF \
+		-DENABLE_GR_ATSC=OFF -DENABLE_DOXYGEN=OFF \
+		-DCMAKE_INSTALL_PREFIX=/usr/local ../src \
+        && make -j5 VERBOSE=1 \
+        && make install \
+	&& cp -vrf /work/stage/* /sysroot-arm/usr/local/ \
+	|| true
+
+COPY lime-suite lime-suite
+COPY cmake-cross lime-suite/cmake-cross
+RUN echo "=======================" \
+	&& echo "  BUILDING: lime-suite" \
+	&& echo "=======================" \
+	&& cd lime-suite \
+	&& cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
+		-DENABLE_SIMD_FLAGS=none \
+        && make -j5 VERBOSE=1 \
+        && make install \
+	&& cp -vrf /work/stage/* /sysroot-arm/usr/local/ \
+	|| true
+
+COPY lime-tools lime-tools
+COPY cmake-cross lime-tools/cmake-cross
+RUN echo "=======================" \
+	&& echo "  BUILDING: lime-tools" \
+	&& echo "=======================" \
+	&& cd lime-tools \
+	&& cmake --debug-output \
+		-DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
+		-DCMAKE_C_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -I/sysroot-arm/usr/local/include -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -I/sysroot-arm/usr/local/include -funsafe-math-optimizations" \
+	&& make -j5 VERBOSE=1 \
+        && make install \
+	|| true
+
+
+
+COPY gr-limesdr gr-limesdr
+COPY cmake-cross gr-limesdr/cmake-cross
+
+RUN echo "=======================" \
+	&& echo "  BUILDING: gr-limesdr" \
+	&& echo "=======================" \
+	&& cd gr-limesdr && PKG_CONFIG_PATH=/sysroot-arm/usr/local/lib/pkgconfig/ cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
+	-DCMAKE_C_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+	-DCMAKE_CXX_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+	-DCMAKE_PREFIX_PATH=/sysroot-arm/usr/local/lib/pkgconfig/ \
+	-DCMAKE_INSTALL_PREFIX=/usr/local \
+        && PKG_CONFIG_PATH=/sysroot-arm/usr/local/lib/pkgconfig/ make -j5 VERBOSE=1 \
+        && make install \
+	|| true
+
+COPY gr-gsm gr-gsm
+COPY cmake-cross gr-gsm/cmake-cross
+
+RUN echo "=======================" \
+	&& echo "  BUILDING: gr-gsm" \
+	&& echo "=======================" \
+	&& cd gr-gsm && \
+	cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
+		-DCMAKE_C_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
+		-DENABLE_GRGSM_LIVEMON="OFF" \
+		-DENABLE_GRGSM_LIVEMON_HEADLESS="OFF" \
+		-DCMAKE_INSTALL_PREFIX=/usr/local \
+        && make -j5 VERBOSE=1 \
+        && make install
+
+COPY gr-osmosdr gr-osmosdr
+COPY cmake-cross gr-osmosdr/cmake-cross
+
+RUN echo "=======================" \
+	&& echo "  BUILDING: gr-osmosdr" \
+	&& echo "=======================" \
+	&& cd gr-osmosdr && \
+	cmake -DCMAKE_TOOLCHAIN_FILE=cmake-cross/glibc-armhf \
+		-DCMAKE_C_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-O2 -mcpu=cortex-a7  -mfpu=neon-vfpv4 -funsafe-math-optimizations" \ 
+		-DCMAKE_INSTALL_PREFIX=/usr/local \
+        && make -j5 VERBOSE=1 \
+        && make install
+
+
+FROM registry.gitlab.com/pantacor/pantavisor-runtime/pvlogger:ARM32V6-master as pvlogger
+
+FROM raspbian/stretch
+
+RUN apt-get update \
+	&& apt-get install -y \
+                python3 \
+                python3-requests \
+                python \
+                python-mako \
+                python-cheetah \
+                python-six \
+                python-numpy \
+                libfftw3-3 \
+                libusb-1.0-0 \
+                liblog4cpp5v5 \
+                libboost-atomic1.62.0 \
+                libboost-chrono1.62.0 \
+                libboost-date-time1.62.0 \
+                libboost-filesystem1.62.0 \
+                libboost-program-options1.62.0 \
+                libboost-regex1.62.0 \
+                libboost-system1.62.0 \
+                libboost-thread1.62.0 \
+                libportaudio2 \
+                libjack0 \
+                libsdl2-2.0-0 \
+                libuhd003 \
+                libzmq5 \
+                openssh-server \
+                raspi-config \
+                rsyslog \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists \
+	&& echo root:pantalime | chpasswd \
+	&& sed -i 's/#ForwardToSyslog=yes/ForwardToSyslog=yes/' /etc/systemd/journald.conf \
+	&& sed -i 's/#Port 22/Port 7022/;s/.*PermitRootLogin.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+
+COPY --from=crossbuilder /work/stage /usr/local
+COPY --from=pvlogger /usr/local/bin/pvlogger /usr/local/bin/
+COPY files /
+
+RUN mkdir -p /etc/systemd/system/multi-user.target.wants/ || true \
+	&& mkdir -p /var/lib/limescan-device/ || true \
+	&& ln -s /etc/systemd/system/regenerate_ssh_host_keys.service /etc/systemd/system/multi-user.target.wants/ \
+	&& ln -s /etc/systemd/system/pvlogger-syslog.service /etc/systemd/system/multi-user.target.wants/ \
+	&& ln -s /etc/systemd/system/limescan-device.service /etc/systemd/system/multi-user.target.wants/ \
+	&& rm -f /etc/systemd/system/timers.target.wants/apt-daily-upgrade.timer \
+	&& rm -f /etc/systemd/system/timers.target.wants/apt-daily.timer
+
+RUN ldconfig
+
