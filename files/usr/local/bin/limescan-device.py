@@ -11,6 +11,7 @@ from datetime import datetime
 import configparser
 from random import randint
 import collections
+import time
 
 def getDigest(input):
     print(input)
@@ -140,11 +141,35 @@ url = config["DEFAULT"]["DATA_URL"] + "write?db=limescan"
 configurl = config["DEFAULT"]["API_URL"]
 devicename = config["DEFAULT"]["DEVICE_NAME"]
 
-deviceconfig = json.loads(requests.get(configurl + "devices/" + devicename).text)
+def checkSchedule():
+    interval_seconds = 0
+    scan_schedule_start = 0
+    deviceconfig = json.loads(requests.get(configurl + "devices/" + devicename).text)
+    print(deviceconfig)
 
-if deviceconfig['scan_type'] == "power":
-    LimeScan(url, configurl, devicename, deviceconfig)
+    print(type(deviceconfig['scan_type_1']))
+    if deviceconfig['scan_type_1'] == 'null':
+        # Single Scan
+        print("single scan")
+        interval_seconds = deviceconfig['scan_interval']
+        delta = time.time() - scan_schedule_start
+        if scan_schedule_start is not 0 and delta < interval_seconds: 
+            time.sleep(interval_seconds - delta)
+        scan_schedule_start = time.time()
+        if deviceconfig['scan_type'] == "power":
+            LimeScan(url, configurl, devicename, deviceconfig)
+        if deviceconfig['scan_type'] == "gsm":
+            GSM(url, configurl, devicename, deviceconfig)
+        checkSchedule()
+    else:
+        # Four interleaved scans
+        print("interleaved scan")
 
-if deviceconfig['scan_type'] == "gsm":
-    GSM(url, configurl, devicename, deviceconfig)
 
+    # if deviceconfig['scan_type'] == "power":
+    #     LimeScan(url, configurl, devicename, deviceconfig)
+
+    # if deviceconfig['scan_type'] == "gsm":
+    #     GSM(url, configurl, devicename, deviceconfig)
+
+checkSchedule()
