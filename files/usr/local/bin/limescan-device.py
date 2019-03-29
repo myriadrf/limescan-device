@@ -29,11 +29,11 @@ def lineAddScanID(line, scanid):
         newline += ' '.join(columns)
     return newline
 
-def LimeScan (url, configurl, devicename, deviceconfig):
-    if deviceconfig['custom_config'] is None:
+def LimeScan (url, configurl, devicename, configid, custom_config):
+    if custom_config is None:
         params = "-f 600M:1000M -C 0 -A LNAW -w 35M -r 16M -OSR 8 -b 512 -g 48 -n 64 -T 1"
     else:
-        params = deviceconfig['custom_config']
+        params = custom_config
     subprocess.Popen(["LimeScan " + params + " -O 'scan-output'"], shell=True).wait()
 
     first_timestamp = None
@@ -59,7 +59,7 @@ def LimeScan (url, configurl, devicename, deviceconfig):
 
         scan_digest = getDigest(lines)
         metadata = {
-            "device_config_id": deviceconfig['device_config_id'],
+            "device_config_id": configid,
             "scan_start_time": float(first_timestamp),
             "scan_finish_time": float(last_timestamp),
             "scan_digest": scan_digest
@@ -75,10 +75,10 @@ def LimeScan (url, configurl, devicename, deviceconfig):
         sqlite_response = requests.post(configurl + "scans", json = metadata)
 
 
-def GSM (url, configurl, devicename, deviceconfig):
+def GSM (url, configurl, devicename, configid, scan_band):
     band = "GSM900"
-    if deviceconfig['scan_band'] is not None:
-        band = deviceconfig['scan_band']
+    if scan_band is not None:
+        band = scan_band
     params = "-s0.8e6 -g56 -f 20000000 -O /tmp/scan-outputGSM -b " + band
     first_timestamp = datetime.now().timestamp() * 1e9
     subprocess.Popen(["grgsm_scanner " + params], shell=True).wait()
@@ -112,7 +112,7 @@ def GSM (url, configurl, devicename, deviceconfig):
         print(line)
         scan_digest = getDigest(line)
         metadata = {
-            "device_config_id": deviceconfig['device_config_id'],
+            "device_config_id": configid,
             "scan_start_time": first_timestamp,
             "scan_finish_time": last_timestamp,
             "scan_digest": scan_digest
@@ -139,7 +139,6 @@ def checkSchedule():
     deviceconfig = json.loads(requests.get(configurl + "devices/" + devicename).text)
     print(deviceconfig)
 
-    print(type(deviceconfig['scan_type_1']))
     if deviceconfig['scan_type_1'] == 'null':
         # Single Scan
         print("single scan")
@@ -149,19 +148,31 @@ def checkSchedule():
             time.sleep(interval_seconds - delta)
         scan_schedule_start = time.time()
         if deviceconfig['scan_type'] == "power":
-            LimeScan(url, configurl, devicename, deviceconfig)
+            LimeScan(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['custom_config'])
         if deviceconfig['scan_type'] == "gsm":
-            GSM(url, configurl, devicename, deviceconfig)
+            GSM(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['scan_band'])
         checkSchedule()
     else:
         # Four interleaved scans
         print("interleaved scan")
+        if deviceconfig['scan_type'] == "power":
+            LimeScan(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['custom_config'])
+        if deviceconfig['scan_type'] == "gsm":
+            GSM(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['scan_band'])
 
+        if deviceconfig['scan_type_1'] == "power":
+            LimeScan(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['custom_config_1'])
+        if deviceconfig['scan_type_1'] == "gsm":
+            GSM(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['scan_band_1'])
 
-    # if deviceconfig['scan_type'] == "power":
-    #     LimeScan(url, configurl, devicename, deviceconfig)
+        if deviceconfig['scan_type_2'] == "power":
+            LimeScan(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['custom_config_2'])
+        if deviceconfig['scan_type_2'] == "gsm":
+            GSM(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['scan_band_2'])
 
-    # if deviceconfig['scan_type'] == "gsm":
-    #     GSM(url, configurl, devicename, deviceconfig)
+        if deviceconfig['scan_type_3'] == "power":
+            LimeScan(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['custom_config_3'])
+        if deviceconfig['scan_type_3'] == "gsm":
+            GSM(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['scan_band_3'])
 
 checkSchedule()
