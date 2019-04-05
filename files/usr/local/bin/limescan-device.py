@@ -137,21 +137,18 @@ def checkSchedule():
     interval_seconds = 0
     scan_schedule_start = 0
     deviceconfig = json.loads(requests.get(configurl + "devices/" + devicename).text)
+    interval_seconds = deviceconfig['scan_interval']
+    scan_schedule_start = time.time()
+
     print(deviceconfig)
 
     if deviceconfig['scan_type_1'] == 'null':
         # Single Scan
         print("single scan")
-        interval_seconds = deviceconfig['scan_interval']
-        delta = time.time() - scan_schedule_start
-        if scan_schedule_start is not 0 and delta < interval_seconds: 
-            time.sleep(interval_seconds - delta)
-        scan_schedule_start = time.time()
         if deviceconfig['scan_type'] == "power":
             LimeScan(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['custom_config'])
         if deviceconfig['scan_type'] == "gsm":
             GSM(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['scan_band'])
-        checkSchedule()
     else:
         # Four interleaved scans
         print("interleaved scan")
@@ -174,5 +171,11 @@ def checkSchedule():
             LimeScan(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['custom_config_3'])
         if deviceconfig['scan_type_3'] == "gsm":
             GSM(url, configurl, devicename, deviceconfig['device_config_id'], deviceconfig['scan_band_3'])
+
+    delta = time.time() - scan_schedule_start
+    if scan_schedule_start is not 0 and delta < interval_seconds: 
+        # Measure interval from scan start, so if the scan took a long time start immediately
+        time.sleep(interval_seconds - delta)
+    checkSchedule()
 
 checkSchedule()
