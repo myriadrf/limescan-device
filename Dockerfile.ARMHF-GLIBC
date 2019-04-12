@@ -177,9 +177,10 @@ RUN apt-get update \
                 rsyslog \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists \
+	&& mkdir -p /root/.ssh \
 	&& echo root:pantalime | chpasswd \
 	&& sed -i 's/#ForwardToSyslog=yes/ForwardToSyslog=yes/' /etc/systemd/journald.conf \
-	&& sed -i 's/#Port 22/Port 7022/;s/.*PermitRootLogin.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+	&& sed -i 's/#Port 22/Port 7022/;s/.*PermitRootLogin.*$/PermitRootLogin yes/;/.*PasswordAuthentication.*/d;$aPasswordAuthentication no\n' /etc/ssh/sshd_config
 
 
 COPY --from=crossbuilder /work/stage /usr/local
