@@ -157,21 +157,25 @@ def checkSchedule():
             LimeScan(url, configurl, devicename, configid, deviceconfig['custom_config'])
         if deviceconfig['scan_type'] == "gsm":
             GSM(url, configurl, devicename, configid, deviceconfig['scan_band'])
+        time.sleep(2)
 
         if deviceconfig['scan_type_1'] == "power":
             LimeScan(url, configurl, devicename, configid, deviceconfig['custom_config_1'])
         if deviceconfig['scan_type_1'] == "gsm":
             GSM(url, configurl, devicename, configid, deviceconfig['scan_band_1'])
+        time.sleep(2)
 
         if deviceconfig['scan_type_2'] == "power":
             LimeScan(url, configurl, devicename, configid, deviceconfig['custom_config_2'])
         if deviceconfig['scan_type_2'] == "gsm":
             GSM(url, configurl, devicename, configid, deviceconfig['scan_band_2'])
+        time.sleep(2)
 
         if deviceconfig['scan_type_3'] == "power":
             LimeScan(url, configurl, devicename, configid, deviceconfig['custom_config_3'])
         if deviceconfig['scan_type_3'] == "gsm":
             GSM(url, configurl, devicename, configid, deviceconfig['scan_band_3'])
+        time.sleep(2)
 
     delta = time.time() - scan_schedule_start
     if scan_schedule_start is not 0 and delta < interval_seconds: 
