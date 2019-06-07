@@ -181,7 +181,7 @@ def checkSchedule():
         time.sleep(2)
 
         if deviceconfig['scan_type_3'] == "power":
-            LimeScan(url, configurl, devicename, configid, deviceconfig['custom_config_3'])
+            LimeScan(configurl, devicename, configid, deviceconfig['custom_config_3'])
         if deviceconfig['scan_type_3'] == "gsm":
             GSM(configurl, devicename, configid, deviceconfig['scan_band_3'])
         time.sleep(2)
