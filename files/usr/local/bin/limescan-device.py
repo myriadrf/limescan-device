@@ -132,7 +132,7 @@ def GSM (configurl, devicename, configid, scan_band):
             "metadata": metadata,
             "scans": line
         }
-        sqlite_response = requests.post(configurl + "scans", json = metadata)
+        sqlite_response = requests.post(configurl + "scans", json = data)
 
 config = configparser.ConfigParser()
 configfile = config.read(['config.ini', '/pantavisor/user-meta/limescan-config.ini'])
