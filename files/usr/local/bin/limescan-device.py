@@ -139,8 +139,10 @@ configfile = config.read(['config.ini', '/pantavisor/user-meta/limescan-config.i
 if len(configfile) == 0:
     raise ValueError("Configuration file missing, rename config.example.ini to config.ini")
 
-configurl = config["DEFAULT"]["API_URL"]
+
 devicename = config["DEFAULT"]["DEVICE_NAME"]
+token = config["DEFAULT"]["DEVICE_TOKEN"]
+configurl = 'https://' + devicename + ':' + token + '@' + config["DEFAULT"]["API_URL"]
 
 def checkSchedule():
     interval_seconds = 0
