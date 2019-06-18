@@ -1,0 +1,9 @@
+[Unit]
+Description=Lime GSM Mode switch (for scan) - Change Path
+
+[Path]
+PathChanged=/pantavisor/user-meta/lime.gsmstation.mode
+
+[Install]
+WantedBy=multi-user.target
+
