@@ -25,3 +25,4 @@ RUN rc-update add limescan-deviced default
 COPY --from=LIB /usr/local/bin/* /usr/local/bin/
 COPY --from=LIB /usr/local/lib /usr/local/lib
 
+ENTRYPOINT [ "/sbin/init" ]

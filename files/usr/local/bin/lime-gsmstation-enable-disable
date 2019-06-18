@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -ex
+
+mode=`cat /pantavisor/user-meta/lime.gsmstation.mode`
+
+# we enable scan, and disable scan if mode has anything different from "scan"
+if [ "$mode" = "scan" ]; then
+	if ! systemctl is-active --quiet limescan-device.service; then
+		systemctl enable limescan-device.service
+		# we sleep 15 seconds to allow other platforms to shut down their side
+		sleep 15
+		systemctl restart limescan-device.service
+	fi
+elif [ -n "$mode" ]; then
+	if systemctl is-active --quiet limescan-device.service; then
+		systemctl disable limescan-device.service
+		systemctl stop limescan-device.service
+	fi
+fi
+

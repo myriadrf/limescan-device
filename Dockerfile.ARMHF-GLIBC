@@ -189,9 +189,10 @@ COPY files /
 
 RUN mkdir -p /etc/systemd/system/multi-user.target.wants/ || true \
 	&& mkdir -p /var/lib/limescan-device/ || true \
-	&& ln -s /etc/systemd/system/regenerate_ssh_host_keys.service /etc/systemd/system/multi-user.target.wants/ \
-	&& ln -s /etc/systemd/system/pvlogger-syslog.service /etc/systemd/system/multi-user.target.wants/ \
-	&& ln -s /etc/systemd/system/limescan-device.service /etc/systemd/system/multi-user.target.wants/ \
+	&& ln -s /etc/systemd/system/regenerate_ssh_host_keys.service \
+	   /etc/systemd/system/pvlogger-syslog.service \
+	   /etc/systemd/system/lime-gsmstation-mode.path \
+	   /etc/systemd/system/multi-user.target.wants/ \
 	&& rm -f /etc/systemd/system/timers.target.wants/apt-daily-upgrade.timer \
 	&& rm -f /etc/systemd/system/timers.target.wants/apt-daily.timer
 

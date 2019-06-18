@@ -1,0 +1,8 @@
+[Unit]
+Description=Lime GSM Mode switch (for scan)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/lime-gsmstation-enable-disable
+
+
