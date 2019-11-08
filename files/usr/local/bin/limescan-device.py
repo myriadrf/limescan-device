@@ -134,6 +134,49 @@ def GSM (configurl, devicename, configid, scan_band):
         }
         sqlite_response = requests.post(configurl + "scans", json = data)
 
+def LTE (configurl, devicename, configid, scan_band):
+    band = "5"
+    if scan_band is not None:
+        band = scan_band
+    params = "-o /tmp/scan-outputLTE -B " + band
+    first_timestamp = datetime.now().timestamp() * 1e9
+    subprocess.Popen(["LTEscan " + params], shell=True).wait()
+    print("command:", "LTEscan " + params)
+
+    last_timestamp = datetime.now().timestamp() * 1e9
+    lines = []
+    items = ["date", "time"]
+
+    with open('/tmp/scan-outputLTE') as resultsfile:
+        dummysplit = resultsfile.readlines()
+        for item in dummysplit[0].strip().split():
+            items.append(item)
+        for line in dummysplit[1:]:
+            line = line.strip()
+            influxline = 'lte,sensor=' + devicename
+            for n,i in enumerate(items):
+                val = line.split()
+                influxline += ','+i+'='+val[n];
+            lines.append(influxline)
+
+    for line in lines:
+        scan_digest = getDigest(line)
+        metadata = {
+            "device_config_id": configid,
+            "scan_start_time": first_timestamp,
+            "scan_finish_time": last_timestamp,
+            "scan_digest": scan_digest
+        }
+        scanid = getDigest(json.dumps(metadata, sort_keys=True))
+        metadata["id"] = scanid
+        line = lineAddScanID(line, scanid)
+
+        data = {
+            "metadata": metadata,
+            "scans": line
+        }
+        sqlite_response = requests.post(configurl + "scans", json = data)
+
 config = configparser.ConfigParser()
 configfile = config.read(['config.ini', '/pantavisor/user-meta/limescan-config.ini'])
 if len(configfile) == 0:
@@ -161,6 +204,8 @@ def checkSchedule():
             LimeScan(configurl, devicename, configid, deviceconfig['custom_config'])
         if deviceconfig['scan_type'] == "gsm":
             GSM(configurl, devicename, configid, deviceconfig['scan_band'])
+        if deviceconfig['scan_type'] == "lte":
+            LTE(configurl, devicename, configid, deviceconfig['scan_band'])
     else:
         # Four interleaved scans
         print("interleaved scan")
@@ -168,24 +213,32 @@ def checkSchedule():
             LimeScan(configurl, devicename, configid, deviceconfig['custom_config'])
         if deviceconfig['scan_type'] == "gsm":
             GSM(configurl, devicename, configid, deviceconfig['scan_band'])
+        if deviceconfig['scan_type'] == "lte":
+            LTE(configurl, devicename, configid, deviceconfig['scan_band'])
         time.sleep(2)
 
         if deviceconfig['scan_type_1'] == "power":
             LimeScan(configurl, devicename, configid, deviceconfig['custom_config_1'])
         if deviceconfig['scan_type_1'] == "gsm":
             GSM(configurl, devicename, configid, deviceconfig['scan_band_1'])
+        if deviceconfig['scan_type_1'] == "lte":
+            LTE(configurl, devicename, configid, deviceconfig['scan_band_1'])
         time.sleep(2)
 
         if deviceconfig['scan_type_2'] == "power":
             LimeScan(configurl, devicename, configid, deviceconfig['custom_config_2'])
         if deviceconfig['scan_type_2'] == "gsm":
             GSM(configurl, devicename, configid, deviceconfig['scan_band_2'])
+        if deviceconfig['scan_type_2'] == "lte":
+            LTE(configurl, devicename, configid, deviceconfig['scan_band_2'])
         time.sleep(2)
 
         if deviceconfig['scan_type_3'] == "power":
             LimeScan(configurl, devicename, configid, deviceconfig['custom_config_3'])
         if deviceconfig['scan_type_3'] == "gsm":
             GSM(configurl, devicename, configid, deviceconfig['scan_band_3'])
+        if deviceconfig['scan_type_3'] == "lte":
+            LTE(configurl, devicename, configid, deviceconfig['scan_band_3'])
         time.sleep(2)
 
     delta = time.time() - scan_schedule_start
